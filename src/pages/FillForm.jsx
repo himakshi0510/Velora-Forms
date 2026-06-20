@@ -1,3 +1,4 @@
+import { supabase } from "../supabase/supabase";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useToast } from "../context/ToastContext";
@@ -172,7 +173,7 @@ function FillForm() {
     // Submit
     // ==========================
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
 
 
         if (
@@ -215,82 +216,50 @@ function FillForm() {
 
             [];
 
+    const { error } = await supabase
 
+.from(
 
+"responses"
 
-        let updatedForms =
+)
 
-            forms.map(
-
-                f => {
-
-
-                    if (
-
-                        f.id === id
-
-                    )
-
-                    {
-
-                        return {
-
-
-                            ...f,
-
-
-                      responses:[
-
-...(f.responses||[]),
-
+.insert(
 
 {
 
+id:crypto.randomUUID(),
+
+form_id:id,
+
+answers:{
 
 ...answers,
 
-
 submittedAt:
-
 
 new Date()
 
 .toLocaleString()
 
+}
 
 }
 
-
-]
-
-
-                        };
-
-                    }
+);
 
 
 
-                    return f;
+if(error)
+{
 
+console.log(error);
 
-                }
+alert(error.message);
 
-            );
+return;
 
-
-
-
-        localStorage.setItem(
-
-            "forms",
-
-            JSON.stringify(
-
-                updatedForms
-
-            )
-
-        );
+}
 
 
 

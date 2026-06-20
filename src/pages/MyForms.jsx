@@ -1,3 +1,6 @@
+import {supabase}
+
+from "../supabase/supabase";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../context/ToastContext";
@@ -9,18 +12,69 @@ function MyForms() {
     const [forms, setForms] = useState([]);
 
 
-    useEffect(() => {
-
-        let savedForms = JSON.parse(
-
-            localStorage.getItem("forms")
-
-        ) || [];
+    useEffect(()=>{
 
 
-        setForms(savedForms);
+fetchForms();
 
-    }, []);
+
+},[]);
+
+
+
+const fetchForms = async()=>{
+
+
+const {
+
+data,
+
+error
+
+}
+
+=
+
+await supabase
+
+.from(
+
+"forms"
+
+)
+
+.select(
+
+"*"
+
+);
+
+
+
+
+if(error)
+{
+
+console.log(
+
+error
+
+);
+
+return;
+
+}
+
+
+
+setForms(
+
+data
+
+);
+
+
+};
 
     const { showToast } = useToast();
 

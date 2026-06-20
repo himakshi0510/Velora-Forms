@@ -1,4 +1,4 @@
-
+import { supabase } from "../supabase/supabase";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useToast } from "../context/ToastContext";
@@ -273,7 +273,7 @@ function CreateForm() {
     // Save Form
     // ============================
 
-    const handleSaveForm = () => {
+    const handleSaveForm = async () => {
 
         console.log("editForm :",editForm);
 
@@ -310,6 +310,8 @@ return;
 
 let form={
 
+
+
 id:
 
 editForm?.id
@@ -330,8 +332,34 @@ editForm?.responses
 
 []
 
+
+
 };
 
+const {error}=await supabase
+
+.from("forms")
+
+.upsert({
+
+id:form.id,
+
+title:form.title,
+
+fields:form.fields,
+
+user_id:"demo"
+
+});
+
+if(error)
+{
+console.log(error);
+
+alert(error.message);
+
+return;
+}
 
 
 let savedForms=

@@ -1,3 +1,16 @@
+import {supabase}
+
+from "../supabase/supabase";
+
+import {
+
+useEffect,
+
+useState
+
+}
+
+from "react";
 import {
 
 PieChart,
@@ -26,76 +39,46 @@ from "recharts";
 function Analytics()
 {
 
-const forms =
+const [
 
-JSON.parse(
+forms,
 
-localStorage.getItem(
+setForms
 
-"forms"
+]
 
-)
+=
 
-)
+useState(
 
-||
+[]
 
-[];
+);
 
+
+const [
+
+responses,
+
+setResponses
+
+]
+
+=
+
+useState(
+
+[]
+
+);
 
 
 const totalForms = forms.length;
 
+const totalResponses = responses.length;
 
 
-const totalResponses = forms.reduce(
-
-(sum,form)=>
-
-sum+
-
-(
-
-form.responses?.length
-
-||
-
-0
-
-),
-
-0
-
-);
-
-const mostActiveForm = forms.reduce(
-
-(max,form)=>
-
-(form.responses?.length||0)
-
->
-
-(max.responses?.length||0)
-
-?
-
-form
-
-:
-
-max
-
-,
-
-{
-
-responses:[]
-
-}
-
-);
-
+const mostActiveForm = { title: "Coming Soon" };
 
 
 const averageResponses =
@@ -116,23 +99,10 @@ totalForms
 
 )
 
-.toFixed(
-
-1
-
-);
+.toFixed(1);
 
 
-
-const emptyForms = forms.filter(
-
-(form)=>
-
-(form.responses?.length||0)
-
-===0
-
-).length;
+const emptyForms = 0;
 
 
 const pieData = [
@@ -160,25 +130,105 @@ emptyForms
 ];
 
 
-
 const barData = forms.map(
 
-(form)=>
+(form)=>({
 
-({
+name:form.title,
 
-name:
-
-form.title,
-
-responses:
-
-form.responses.length
+responses:0
 
 })
 
 );
 
+
+useEffect(()=>{
+
+
+fetchData();
+
+
+},[]);
+
+
+
+const fetchData = async()=>{
+
+
+const {
+
+data:formsData
+
+}
+
+=
+
+await supabase
+
+.from(
+
+"forms"
+
+)
+
+.select(
+
+"*"
+
+);
+
+
+
+
+const {
+
+data:responsesData
+
+}
+
+=
+
+await supabase
+
+.from(
+
+"responses"
+
+)
+
+.select(
+
+"*"
+
+);
+
+
+
+setForms(
+
+formsData
+
+||
+
+[]
+
+);
+
+
+
+setResponses(
+
+responsesData
+
+||
+
+[]
+
+);
+
+
+};
 
 return(
 
@@ -515,14 +565,13 @@ form.title
 </h3>
 
 
-
 <p>
 
-Responses :
+Fields :
 
 {
 
-form.responses.length
+form.fields.length
 
 }
 
@@ -530,35 +579,6 @@ form.responses.length
 
 
 
-{
-
-form.responses.length>0
-
-&&
-
-
-<p>
-
-Latest Response :
-
-{
-
-
-form.responses[
-
-form.responses.length-1
-
-]
-
-.submittedAt
-
-
-}
-
-</p>
-
-
-}
 
 
 
