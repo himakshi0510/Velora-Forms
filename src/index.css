@@ -66,12 +66,11 @@ width:70px;
 
 .content{
 
-
 flex:1;
 
+padding:40px;
 
-padding:60px;
-
+overflow-x:hidden;
 
 }
 
@@ -380,14 +379,13 @@ cursor:pointer;
 
 }
 
-
 .formPage{
 
 max-width:850px;
 
 margin:auto;
 
-padding-top:30px;
+padding:20px;
 
 }
 
@@ -1088,3 +1086,5 @@ box-shadow:
 color:white;
 
 }
+
+
