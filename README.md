@@ -1,16 +1,172 @@
-# React + Vite
+# Velora Forms
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Velora Forms is a modern form builder application developed using React and Supabase. It enables users to create customizable forms, share them publicly, collect responses, and analyze submissions through an interactive dashboard.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+### Authentication
 
-## React Compiler
+* Google Sign-In using Supabase Authentication
+* Protected routes for authenticated users
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Form Builder
 
-## Expanding the ESLint configuration
+* Create and manage unlimited forms
+* Supported field types:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+  * Text
+  * Email
+  * Number
+  * Password
+  * Date
+  * URL
+  * File
+  * Textarea
+  * Radio Buttons
+  * Checkboxes
+  * Select Dropdowns
+* Required field validation
+* Edit existing forms
+* Duplicate forms
+* Delete forms
+
+### Form Sharing
+
+* Publicly accessible form links
+* Form submission without authentication
+* Dedicated Thank You page after successful submission
+
+### Response Management
+
+* View submitted responses
+* Search responses
+* Sort responses by latest or oldest
+* Export responses to CSV format
+* Delete responses
+
+### Notifications
+
+* Notifications for newly received responses
+* Chronological ordering of notifications
+
+### Analytics
+
+* Total forms created
+* Total responses received
+* Average responses per form
+* Empty forms count
+* Most active form
+* Pie Chart and Bar Chart visualizations using Recharts
+
+### User Interface
+
+* Light and Dark themes
+* Responsive layout
+* Collapsible sidebar navigation
+* Dashboard overview of forms and responses
+
+---
+
+## Technology Stack
+
+### Frontend
+
+* React.js
+* React Router DOM
+* Recharts
+* Lucide React
+
+### Backend
+
+* Supabase
+
+  * Authentication
+  * PostgreSQL Database
+  * Row Level Security (RLS)
+
+### Deployment
+
+* Netlify
+
+---
+
+## Database Schema
+
+### forms
+
+| Column     | Type        |
+| ---------- | ----------- |
+| id         | uuid        |
+| title      | text        |
+| fields     | jsonb       |
+| user_id    | uuid        |
+| created_at | timestamptz |
+
+### responses
+
+| Column       | Type        |
+| ------------ | ----------- |
+| id           | uuid        |
+| form_id      | uuid        |
+| answers      | jsonb       |
+| submitted_at | timestamptz |
+
+---
+
+## Installation
+
+Clone the repository:
+
+```bash
+git clone <https://github.com/himakshi0510/Velora-Forms>
+```
+
+Navigate to the project directory:
+
+```bash
+cd velora-forms
+```
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Run the development server:
+
+```bash
+npm run dev
+```
+
+Build the project:
+
+```bash
+npm run build
+```
+
+---
+
+## Live Demo
+
+https://veloraforms.netlify.app/
+
+---
+
+## Author
+
+Himakshi Bansal
+
+B.Tech in Robotics and Artificial Intelligence
+CGC University, Mohali
+
+---
+
+## Future Enhancements
+
+* Cloud storage support for uploaded files
+* Form templates
+* Email notifications
+* AI-assisted form generation
+* Advanced response filtering
+* Multi-step forms
