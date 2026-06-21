@@ -206,38 +206,28 @@ false
     // Submit
     // ==========================
 
-    const handleSubmit = async () => {
+const handleSubmit = async()=>{
 
-    let filled = Object.values(
+for(let field of form.fields)
+{
 
-answers
+const value = answers[field.label];
 
+if(field.required)
+{
+
+if(
+!value
+||
+(Array.isArray(value) && value.length===0)
 )
-
-.some(
-
-value =>
-
-Array.isArray(value)
-
-?
-
-value.length > 0
-
-:
-
-value
-
-);
-
-
-
-if(!filled)
 {
 
 alert(
 
-"Please fill at least one field"
+field.label +
+
+" is required"
 
 );
 
@@ -245,25 +235,19 @@ return;
 
 }
 
+}
 
-    
-        for(let field of form.fields)
+
+if(field.type==="url" && value)
 {
 
-if(field.type==="url")
-{
-
-let value = answers[field.label] || "";
-
-try
-{
+try{
 
 new URL(value);
 
 }
 
-catch
-{
+catch{
 
 alert(
 
@@ -277,17 +261,48 @@ return;
 
 }
 
+for(let field of form.fields)
+{
+
+if(field.required)
+{
+
+const value = answers[field.label];
+
+if(
+!value
+||
+(Array.isArray(value) && value.length===0)
+)
+{
+
+alert(
+
+field.label +
+
+" is required"
+
+);
+
+return;
+
+}
+
+}
+
+}
+
 }
 
 
-    const { error } = await supabase
+
+const {error} = await supabase
 
 .from(
 
 "responses"
 
 )
-
 
 .insert(
 
@@ -307,11 +322,12 @@ answers,
 
 submitted_at:
 
-new Date()
+new Date().toISOString()
 
 }
 
 );
+
 
 
 if(error)
@@ -327,20 +343,6 @@ return;
 
 
 
-        setAnswers(
-
-            {}
-
-        );
-
-
-
-        alert(
-
-            "✔ Response submitted successfully"
-
-        );
-
 showToast(
 
 "✔ Response submitted successfully"
@@ -354,10 +356,7 @@ navigate(
 
 );
 
-
-
-    };
-
+};
 
 
 
@@ -365,270 +364,252 @@ navigate(
     // Render Fields
     // ==========================
 
-    const renderField = (field) => {
+const renderField = (field)=>{
 
 
-        if (
+if(field.type==="textarea")
+{
 
-            field.type === "textarea"
+return(
 
-        )
+<textarea
 
-        {
+className="formInput"
 
-            return (
+required={field.required}
 
-                <textarea
+onChange={(e)=>
 
+handleChange(
 
-                    required={field.required}
+field.label,
 
+e.target.value
 
-                    onChange={(e) =>
+)
 
-                        handleChange(
+}
 
-                            field.label,
+/>
 
-                            e.target.value
+);
 
-                        )
+}
 
-                    }
 
 
-                />
+if(field.type==="select")
+{
 
-            );
+return(
 
-        }
+<select
 
+className="formInput"
 
+required={field.required}
 
+onChange={(e)=>
 
-        if (
+handleChange(
 
-            field.type === "select"
+field.label,
 
-        )
+e.target.value
 
-        {
+)
 
-            return (
+}
 
-                <select
+>
 
+<option>
 
-                    required={field.required}
+Choose option
 
+</option>
 
-                    onChange={(e) =>
 
-                        handleChange(
+{
 
-                            field.label,
+(field.options||[])
 
-                            e.target.value
+.map(
 
-                        )
+(option,index)=>(
 
-                    }
+<option key={index}>
 
+{option}
 
-                >
+</option>
 
+)
 
-                    <option>
+)
 
-                        Choose option
+}
 
-                    </option>
 
+</select>
 
+);
 
-                    {
+}
 
-                        (field.options || []).map(
 
-                            (option, index) => (
 
+if(field.type==="radio")
+{
 
-                                <option
+return(
 
-                                    key={index}
+(field.options||[])
 
-                                >
+.map(
 
-                                    {option}
+(option,index)=>(
 
-                                </option>
 
+<div
 
-                            )
+key={index}
 
-                        )
+style={{
 
-                    }
+marginTop:"10px"
 
+}}
 
-                </select>
+>
 
-            );
 
-        }
+<input
 
+type="radio"
 
+name={field.label}
 
+value={option}
 
-        if (
+onChange={(e)=>
 
-            field.type === "radio"
+handleChange(
 
-        )
+field.label,
 
-        {
+e.target.value
 
-            return (
+)
 
-                (field.options || []).map(
+}
 
-                    (option, index) => (
+/>
 
 
-                        <div key={index}>
+&nbsp;
 
 
-                            <input
+{option}
 
 
-                                type="radio"
+</div>
 
 
-                                name={field.label}
+)
 
+)
 
-                                value={option}
+);
 
+}
 
-                                onChange={(e) =>
 
-                                    handleChange(
 
-                                        field.label,
+if(field.type==="checkbox")
+{
 
-                                        e.target.value
+return(
 
-                                    )
+(field.options||[])
 
-                                }
+.map(
 
+(option,index)=>(
 
-                            />
 
+<div
 
-                            {option}
+key={index}
 
+style={{
 
-                        </div>
+marginTop:"10px"
 
+}}
 
-                    )
+>
 
-                )
 
-            );
+<input
 
-        }
+type="checkbox"
 
+checked={
 
+(
 
+answers[field.label]
 
-        if (
+||
 
-            field.type === "checkbox"
+[]
 
-        )
+)
 
-        {
+.includes(
 
-            return (
+option
 
-                (field.options || []).map(
+)
 
-                    (option, index) => (
+}
 
 
-                        <div
+onChange={(e)=>
 
-                            key={index}
+handleCheckboxChange(
 
-                        >
+field.label,
 
+option,
 
+e.target.checked
 
-                            <input
+)
 
+}
 
-                                type="checkbox"
 
+/>
 
-                                checked={
 
+&nbsp;
 
-                                    (
 
-                                        answers[field.label]
+{option}
 
-                                        ||
 
-                                        []
+</div>
 
-                                    )
 
-                                        .includes(
+)
 
-                                            option
+)
 
-                                        )
+);
 
-                                }
-
-
-
-                                onChange={(e) =>
-
-
-                                    handleCheckboxChange(
-
-                                        field.label,
-
-                                        option,
-
-                                        e.target.checked
-
-                                    )
-
-
-                                }
-
-
-                            />
-
-
-
-                            {option}
-
-
-                        </div>
-
-
-                    )
-
-                )
-
-            );
-
-        }
+}
 
 
 
@@ -639,15 +620,13 @@ return(
 
 <input
 
+className="formInput"
 
 type="file"
 
-
 required={field.required}
 
-
 onChange={(e)=>
-
 
 handleChange(
 
@@ -657,9 +636,7 @@ e.target.files[0]?.name
 
 )
 
-
 }
-
 
 />
 
@@ -668,9 +645,12 @@ e.target.files[0]?.name
 }
 
 
+
 return(
 
 <input
+
+className="formInput"
 
 type={field.type}
 
@@ -692,9 +672,7 @@ e.target.value
 
 );
 
-    };
-
-
+};
 
 
     // ==========================
@@ -743,85 +721,134 @@ e.target.value
     // JSX
     // ==========================
 
-    return (
+return(
 
-        <div>
-
-
-            <h1>
-
-                {form.title}
-
-            </h1>
+<div className="formPage">
 
 
-
-            {
-
-                form.fields.map(
-
-                    (field, index) => (
+<div className="formCard">
 
 
-                        <div
+<h1
 
-                            key={index}
+style={{
 
-                        >
+textAlign:"center",
 
+marginBottom:"35px"
 
-                            <label>
+}}
 
-                                {field.label}
+>
 
-                            </label>
+{form.title}
 
-
-                            <br />
-
-
-                            {
-
-                                renderField(
-
-                                    field
-
-                                )
-
-                            }
-
-
-                            <br />
-
-                            <br />
-
-
-                        </div>
-
-
-                    )
-
-                )
-
-            }
+</h1>
 
 
 
+{
 
-            <button
+form.fields.map(
 
-                onClick={handleSubmit}
-
-            >
-
-                Submit Response
-
-            </button>
+(field,index)=>(
 
 
-        </div>
+<div
 
-    );
+className="formSection"
+
+key={index}
+
+>
+
+
+<h3>
+
+
+{field.label}
+
+
+{
+
+field.required
+
+&&
+
+
+<span
+
+style={{
+
+color:"red"
+
+}}
+
+>
+
+ *
+
+</span>
+
+}
+
+
+</h3>
+
+
+
+{
+
+renderField(
+
+field
+
+)
+
+}
+
+
+
+</div>
+
+
+)
+
+)
+
+}
+
+
+
+<button
+
+className="saveBtn"
+
+style={{
+
+width:"100%",
+
+marginTop:"25px"
+
+}}
+
+onClick={handleSubmit}
+
+>
+
+
+Submit Response
+
+
+</button>
+
+
+</div>
+
+
+</div>
+
+);
 
 }
 

@@ -113,12 +113,11 @@ showToast(
 
 useEffect(()=>{
 
+checkUser();
 
 fetchResponses();
 
-
 },[id]);
-
 
 
 const fetchResponses = async()=>{
@@ -253,7 +252,19 @@ response.submitted_at
 
 )
 
-.toLocaleString()
+.toLocaleString(
+
+"en-IN",
+
+{
+
+timeZone:
+
+"Asia/Kolkata"
+
+}
+
+)
 
 +
 
@@ -366,21 +377,30 @@ return(
 <div className="formPage">
 
 
-<h1
+<p
 
 style={{
 
 textAlign:"center",
 
-marginBottom:"30px"
+marginBottom:"30px",
+
+color:"#64748b"
 
 }}
 
 >
 
-Responses
+{
 
-</h1>
+responses.length
+
+}
+
+Responses Found
+
+
+</p>
 
 
 
@@ -592,14 +612,17 @@ key={response.id}
 
 >
 
-
-
 <h2>
 
-Response {index+1}
+Response #
+
+{
+
+responses.length-index
+
+}
 
 </h2>
-
 
 
 <p>

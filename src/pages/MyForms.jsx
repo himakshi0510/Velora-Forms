@@ -26,6 +26,11 @@ await supabase.auth.getUser();
 
 if(!user)
 {
+return;
+}
+
+if(!user)
+{
 
 navigate(
 
@@ -271,34 +276,33 @@ data:{user}
 
 await supabase.auth.getUser();
 
-
-
 const copy = {
-
 
 id:
 
 crypto.randomUUID(),
 
-
 title:
 
-form.title+" Copy",
+form.title +
 
+" Copy",
 
 fields:
 
 form.fields,
 
-
 user_id:
 
-user.id
+user.id,
 
+created_at:
+
+new Date()
+
+.toISOString()
 
 };
-
-
 
 const {
 
@@ -438,6 +442,29 @@ form.title
 
 </h2>
 
+<p
+style={{
+color:"#64748b",
+fontSize:"14px"
+}}
+>
+
+Created :
+
+{
+
+new Date(
+
+form.created_at
+
+)
+
+.toLocaleDateString()
+
+}
+
+</p>
+
 
 
 <p>
@@ -452,10 +479,11 @@ form.fields.length
 
 </p>
 
-
 <p>
 
 Responses :
+
+<b>
 
 {
 
@@ -469,9 +497,9 @@ r=>r.form_id===form.id
 
 }
 
+</b>
+
 </p>
-
-
 
 <br/>
 
@@ -576,12 +604,38 @@ window.location.origin +
 
 form.id;
 
+navigator.clipboard.writeText(link)
 
-navigator.clipboard.writeText(link);
+.then(()=>{
+
+showToast(
+
+"✔ Link copied successfully"
+
+);
+
+})
+
+.catch(()=>{
+
+prompt(
+
+"Copy this link",
+
+link
+
+);
+
+});
+
 
 alert(link);
 
-showToast("Link copied");
+showToast(
+
+"✔ Link copied successfully"
+
+);
 
 }
 

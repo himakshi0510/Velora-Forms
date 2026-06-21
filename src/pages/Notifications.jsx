@@ -45,6 +45,11 @@ data:{user}
 
 await supabase.auth.getUser();
 
+if(!user)
+{
+return;
+}
+
 
 
 const {
@@ -192,21 +197,30 @@ return(
 <div className="formPage">
 
 
-<h1
+<p
 
 style={{
 
 textAlign:"center",
 
-marginBottom:"35px"
+marginBottom:"25px",
+
+color:"#64748b"
 
 }}
 
 >
 
+{
+
+notifications.length
+
+}
+
 Notifications
 
-</h1>
+
+</p>
 
 
 
@@ -230,10 +244,9 @@ No notifications yet
 
 </h2>
 
-
 <p>
 
-Responses will appear here.
+Notifications from submitted forms will appear here.
 
 </p>
 
@@ -304,7 +317,7 @@ fontWeight:"600"
 
 >
 
-New response received
+ New response received
 
 </p>
 
@@ -335,7 +348,19 @@ notification.time
 
 )
 
-.toLocaleString()
+.toLocaleString(
+
+"en-IN",
+
+{
+
+timeZone:
+
+"Asia/Kolkata"
+
+}
+
+)
 
 :
 

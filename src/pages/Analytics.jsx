@@ -100,10 +100,25 @@ formCounts[response.form_id] =
 );
 
 
-
 const mostActiveId =
 
-Object.keys(formCounts)
+Object.keys(
+
+formCounts
+
+).length===0
+
+?
+
+null
+
+:
+
+Object.keys(
+
+formCounts
+
+)
 
 .reduce(
 
@@ -121,12 +136,7 @@ a
 
 b
 
-,
-
-Object.keys(formCounts)[0]
-
 );
-
 
 
 const mostActiveForm =
@@ -200,7 +210,10 @@ data:{user}
 
 await supabase.auth.getUser();
 
-
+if(!user)
+{
+return;
+}
 
 if(!user)
 {
@@ -417,17 +430,26 @@ return(
 
 <div className="formPage">
 
+
+<div className="formCard">
+
+
 <h1>
 
 Analytics
 
 </h1>
 
+
 <p>
 
-No forms available
+No forms created yet
 
 </p>
+
+
+</div>
+
 
 </div>
 
@@ -554,7 +576,7 @@ mostActiveForm.title
 
 ||
 
-"None"
+"No responses yet"
 
 }
 
@@ -784,6 +806,29 @@ form.title
 }
 
 </h3>
+
+
+<p
+style={{
+color:"#64748b"
+}}
+>
+
+Created :
+
+{
+
+new Date(
+
+form.created_at
+
+)
+
+.toLocaleDateString()
+
+}
+
+</p>
 
 
 <p>

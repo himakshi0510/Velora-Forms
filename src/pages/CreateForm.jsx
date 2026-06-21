@@ -316,30 +316,6 @@ data:{user}
 
 await supabase.auth.getUser();
 
-console.log(
-
-"Current user",
-
-user
-
-);
-
-console.log(
-
-"User id",
-
-user?.id
-
-);
-
-console.log(
-
-"Email",
-
-user?.email
-
-);
-
 
 if(!user)
 {
@@ -375,7 +351,7 @@ user.id,
 
 created_at:
 
-new Date()
+new Date().toISOString()
 
 };
 
@@ -683,9 +659,13 @@ marginBottom:"25px"
 
 >
 
-
-<label>
-
+<label
+style={{
+display:"flex",
+alignItems:"center",
+gap:"10px"
+}}
+>
 
 <input
 
@@ -697,11 +677,7 @@ onChange={(e)=>setRequired(e.target.checked)}
 
 />
 
-
-&nbsp;
-
 Required
-
 
 </label>
 
@@ -862,9 +838,23 @@ key={index}
 
 <h3>
 
+{field.label}
+
 {
 
-field.label
+field.required
+
+&&
+
+<span
+style={{
+color:"red"
+}}
+>
+
+ *
+
+</span>
 
 }
 
@@ -878,6 +868,22 @@ Type :
 {
 
 field.type
+
+}
+
+</p>
+
+<p>
+
+Options :
+
+{
+
+field.options?.length
+
+||
+
+0
 
 }
 
