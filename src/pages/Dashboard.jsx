@@ -1,53 +1,205 @@
 import { useNavigate } from "react-router-dom";
+import { useEffect,useState } from "react";
+
 import {
 
 PlusCircle,
 
 FileText,
 
-MessageSquare,
-
-Clock
+MessageSquare
 
 }
 
 from "lucide-react";
 
+import { supabase }
+
+from "../supabase/supabase";
 
 
-function Dashboard(){
+
+function Dashboard()
+{
 
 const navigate = useNavigate();
 
-const forms =
-JSON.parse(
-localStorage.getItem("forms")
+const [forms,setForms] = useState([]);
+
+const [responses,setResponses] = useState([]);
+
+
+
+useEffect(()=>{
+
+fetchData();
+
+},[]);
+
+
+
+const fetchData = async()=>{
+
+
+const {
+
+data:{user}
+
+}
+
+=
+
+await supabase.auth.getUser();
+
+
+
+if(!user)
+{
+
+return;
+
+}
+
+
+
+const {
+
+data:formsData
+
+}
+
+=
+
+await supabase
+
+.from(
+
+"forms"
+
 )
-||
-[];
 
-const totalForms = forms.length;
+.select(
 
-const totalResponses =
-forms.reduce(
+"*"
 
-(sum,form)=>
+)
 
-sum+
+.eq(
+
+"user_id",
+
+user.id
+
+);
+
+
+
+
+const {
+
+data:responsesData
+
+}
+
+=
+
+await supabase
+
+.from(
+
+"responses"
+
+)
+
+.select(
+
+"*"
+
+);
+
+
+
+
+const myFormIds =
 
 (
 
-form.responses?.length
+formsData
 
 ||
 
-0
+[]
 
-),
+)
 
-0
+.map(
+
+f=>f.id
 
 );
+
+
+
+
+const filteredResponses =
+
+(
+
+responsesData
+
+||
+
+[]
+
+)
+
+.filter(
+
+response=>
+
+myFormIds.includes(
+
+response.form_id
+
+)
+
+);
+
+
+
+
+setForms(
+
+formsData
+
+||
+
+[]
+
+);
+
+
+
+setResponses(
+
+filteredResponses
+
+||
+
+[]
+
+);
+
+
+
+};
+
+
+
+const totalForms = forms.length;
+
+const totalResponses = responses.length;
+
 
 
 return(
@@ -67,6 +219,7 @@ Welcome Back
 Build forms effortlessly and collect responses intelligently.
 
 </p>
+
 
 
 
@@ -92,13 +245,11 @@ color="#14b8a6"
 />
 
 
-
 <h3>
 
 Create Form
 
 </h3>
-
 
 
 <p>
@@ -132,7 +283,6 @@ color="#2563eb"
 />
 
 
-
 <h2>
 
 {
@@ -144,7 +294,6 @@ totalForms
 </h2>
 
 
-
 <p>
 
 Saved Forms
@@ -152,9 +301,7 @@ Saved Forms
 </p>
 
 
-
 </div>
-
 
 
 
@@ -178,7 +325,6 @@ color="#14b8a6"
 />
 
 
-
 <h2>
 
 {
@@ -190,7 +336,6 @@ totalResponses
 </h2>
 
 
-
 <p>
 
 Collected Responses
@@ -198,14 +343,11 @@ Collected Responses
 </p>
 
 
-
 </div>
 
 
 
-
 </div>
-
 
 
 
@@ -213,21 +355,78 @@ Collected Responses
 
 {
 
-forms.length>0
+forms.length===0
 
-&&
+
+?
+
+
+(
+
+<div
+
+className="formCard"
+
+style={{marginTop:"40px"}}
+
+>
+
+
+<h2>
+
+Welcome..
+
+</h2>
+
+
+
+<p>
+
+You haven't created any forms yet.
+
+</p>
+
+
+
+<br/>
+
+
+
+<button
+
+className="saveBtn"
+
+onClick={()=>navigate(
+
+"/create"
+
+)}
+
+>
+
+Create Form
+
+</button>
+
+
+</div>
+
+)
+
+
+
+:
+
+
+
+(
 
 
 <div
 
-
 className="formCard"
 
-style={{
-
-marginTop:"40px"
-
-}}
+style={{marginTop:"40px"}}
 
 >
 
@@ -239,14 +438,15 @@ Recent Activity
 </h2>
 
 
-
 <br/>
 
 
 
 {
 
-forms.slice(
+forms
+
+.slice(
 
 0,
 
@@ -256,12 +456,12 @@ forms.slice(
 
 .map(
 
-(form,index)=>(
+(form)=>(
 
 
 <div
 
-key={index}
+key={form.id}
 
 >
 
@@ -284,11 +484,13 @@ Responses :
 
 {
 
-form.responses?.length
+responses.filter(
 
-||
+r=>r.form_id===form.id
 
-0
+)
+
+.length
 
 }
 
@@ -304,9 +506,17 @@ form.responses?.length
 
 )
 
-
 )
 
+
+
+}
+
+
+</div>
+
+
+)
 
 
 }
@@ -315,15 +525,11 @@ form.responses?.length
 
 </div>
 
-}
-
-
-
-</div>
-
-)
+);
 
 
 }
+
+
 
 export default Dashboard;
