@@ -275,8 +275,6 @@ function CreateForm() {
 
     const handleSaveForm = async () => {
 
-        console.log("editForm :",editForm);
-
 
 if(title.trim()==="")
 {
@@ -308,9 +306,56 @@ return;
 
 
 
-let form={
+const {
+
+data:{user}
+
+}
+
+=
+
+await supabase.auth.getUser();
+
+console.log(
+
+"Current user",
+
+user
+
+);
+
+console.log(
+
+"User id",
+
+user?.id
+
+);
+
+console.log(
+
+"Email",
+
+user?.email
+
+);
 
 
+if(!user)
+{
+
+alert(
+
+"Please login first"
+
+);
+
+return;
+
+}
+
+
+const form = {
 
 id:
 
@@ -324,59 +369,15 @@ title,
 
 fields,
 
-responses:
+user_id:
 
-editForm?.responses
+user.id,
 
-||
+created_at:
 
-[]
-
-
+new Date()
 
 };
-
-const {error}=await supabase
-
-.from("forms")
-
-.upsert({
-
-id:form.id,
-
-title:form.title,
-
-fields:form.fields,
-
-user_id:"demo"
-
-});
-
-if(error)
-{
-console.log(error);
-
-alert(error.message);
-
-return;
-}
-
-
-let savedForms=
-
-JSON.parse(
-
-localStorage.getItem(
-
-"forms"
-
-)
-
-)
-
-||
-
-[];
 
 
 
@@ -384,46 +385,74 @@ if(editForm)
 {
 
 
-savedForms=savedForms.map(
+const {
 
-(f)=>
+error
+
+}
+
+=
+
+await supabase
+
+.from(
+
+"forms"
+
+)
+
+.update(
+
+{
+
+title:
+
+form.title,
 
 
-f.id===editForm.id
+
+fields:
+
+form.fields,
 
 
-?
+
+user_id:
+
+user.id
+
+}
+
+)
 
 
-form
+.eq(
 
+"id",
 
-:
-
-
-f
+editForm.id
 
 );
+
+
+
+
+if(error)
+{
+
+console.log(error);
+
+alert(error.message);
+
+return;
+
+}
 
 
 
 showToast(
 
 "✔ Form updated successfully"
-
-);
-
-
-
-localStorage.setItem(
-
-"forms",
-
-JSON.stringify(
-
-savedForms
-
-)
 
 );
 
@@ -444,7 +473,25 @@ else
 {
 
 
-savedForms.unshift(
+const {
+
+error
+
+}
+
+=
+
+await supabase
+
+
+.from(
+
+"forms"
+
+)
+
+
+.insert(
 
 form
 
@@ -452,23 +499,23 @@ form
 
 
 
+
+if(error)
+{
+
+console.log(error);
+
+alert(error.message);
+
+return;
+
+}
+
+
+
 showToast(
 
 "✔ Form saved successfully"
-
-);
-
-
-
-localStorage.setItem(
-
-"forms",
-
-JSON.stringify(
-
-savedForms
-
-)
 
 );
 
@@ -488,8 +535,7 @@ form.id
 
 
 };
-
-
+   
     // ============================
     // JSX
     // ============================

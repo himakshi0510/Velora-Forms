@@ -2,6 +2,8 @@ import {supabase}
 
 from "../supabase/supabase";
 
+import { useNavigate } from "react-router-dom";
+
 import {
 
 useEffect,
@@ -38,6 +40,8 @@ from "recharts";
 
 function Analytics()
 {
+
+const navigate = useNavigate();
 
 const [
 
@@ -77,8 +81,69 @@ const totalForms = forms.length;
 
 const totalResponses = responses.length;
 
+const formCounts = {};
 
-const mostActiveForm = { title: "Coming Soon" };
+responses.forEach(
+
+(response)=>{
+
+formCounts[response.form_id] =
+
+(formCounts[response.form_id] || 0)
+
++
+
+1;
+
+}
+
+);
+
+
+
+const mostActiveId =
+
+Object.keys(formCounts)
+
+.reduce(
+
+(a,b)=>
+
+formCounts[a] >
+
+formCounts[b]
+
+?
+
+a
+
+:
+
+b
+
+,
+
+Object.keys(formCounts)[0]
+
+);
+
+
+
+const mostActiveForm =
+
+forms.find(
+
+f=>f.id===mostActiveId
+
+)
+
+||
+
+{
+
+title:"None"
+
+};
 
 
 const averageResponses =
@@ -102,7 +167,61 @@ totalForms
 .toFixed(1);
 
 
-const emptyForms = 0;
+const emptyForms = forms.filter(
+
+(form)=>{
+
+
+return !responses.some(
+
+r=>r.form_id===form.id
+
+);
+
+
+}
+
+)
+
+.length;
+
+
+
+const checkUser = async()=>{
+
+
+const {
+
+data:{user}
+
+}
+
+=
+
+await supabase.auth.getUser();
+
+
+
+if(!user)
+{
+
+navigate("/profile");
+
+}
+
+
+};
+
+
+useEffect(()=>{
+
+
+checkUser();
+
+fetchData();
+
+
+},[]);
 
 
 const pieData = [
@@ -134,26 +253,45 @@ const barData = forms.map(
 
 (form)=>({
 
-name:form.title,
 
-responses:0
+name:
+
+form.title,
+
+
+
+responses:
+
+
+responses.filter(
+
+r=>r.form_id===form.id
+
+)
+
+.length
+
 
 })
 
 );
 
 
-useEffect(()=>{
-
-
-fetchData();
-
-
-},[]);
-
 
 
 const fetchData = async()=>{
+
+
+const {
+
+data:{user}
+
+}
+
+=
+
+await supabase.auth.getUser();
+
 
 
 const {
@@ -176,10 +314,15 @@ await supabase
 
 "*"
 
+)
+
+.eq(
+
+"user_id",
+
+user.id
+
 );
-
-
-
 
 const {
 
@@ -205,6 +348,50 @@ await supabase
 
 
 
+const myFormIds =
+
+(
+
+formsData
+
+||
+
+[]
+
+)
+
+.map(
+
+f=>f.id
+
+);
+
+
+
+const filteredResponses =
+
+(
+
+responsesData
+
+||
+
+[]
+
+)
+
+.filter(
+
+response=>
+
+myFormIds.includes(
+
+response.form_id
+
+)
+
+);
+
 setForms(
 
 formsData
@@ -215,20 +402,38 @@ formsData
 
 );
 
-
-
 setResponses(
 
-responsesData
-
-||
-
-[]
+filteredResponses
 
 );
 
-
 };
+
+if(forms.length===0)
+{
+
+return(
+
+<div className="formPage">
+
+<h1>
+
+Analytics
+
+</h1>
+
+<p>
+
+No forms available
+
+</p>
+
+</div>
+
+);
+
+}
 
 return(
 
@@ -372,7 +577,11 @@ Highest Responses
 
 {
 
-mostActiveForm.responses?.length
+formCounts[
+
+mostActiveId
+
+]
 
 ||
 
@@ -414,7 +623,13 @@ height:"320px"
 
 >
 
-<ResponsiveContainer>
+<ResponsiveContainer
+
+width="100%"
+
+height={320}
+
+>
 
 <PieChart>
 
@@ -475,7 +690,13 @@ height:"350px"
 
 >
 
-<ResponsiveContainer>
+<ResponsiveContainer
+
+width="100%"
+
+height={350}
+
+>
 
 <BarChart
 
@@ -549,7 +770,7 @@ forms.map(
 className="formCard"
 
 
-key={index}
+key={form.id}
 
 >
 
@@ -579,6 +800,23 @@ form.fields.length
 
 
 
+<p>
+
+Responses :
+
+{
+
+responses.filter(
+
+r=>r.form_id===form.id
+
+)
+
+.length
+
+}
+
+</p>
 
 
 

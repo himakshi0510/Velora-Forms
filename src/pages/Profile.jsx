@@ -1,65 +1,38 @@
-import { useEffect } from "react";
-import { onAuthStateChanged } from "firebase/auth";
-import {
+import { useEffect, useState } from "react";
+import { supabase } from "../supabase/supabase";
 
-auth
+function Profile() {
 
-}
+const [user,setUser] = useState(null);
 
-from "../firebase/firebase";
+const [loading,setLoading] = useState(true);
 
-import {
-
-GoogleAuthProvider,
-
-signInWithPopup,
-
-signOut
-
-}
-
-from "firebase/auth";
-
-import {
-
-useState
-
-}
-
-from "react";
-
-
-function Profile()
-{
-
-const [
-
-user,
-
-setUser
-
-]
-
-=
-
-useState(
-
-auth.currentUser
-
-);
 
 
 useEffect(()=>{
 
-const unsubscribe = onAuthStateChanged(
+checkUser();
 
-auth,
 
-(currentUser)=>{
+const {
+
+data:{subscription}
+
+}
+
+=
+
+supabase.auth.onAuthStateChange(
+
+(event,session)=>{
 
 setUser(
 
-currentUser
+session?.user
+
+||
+
+null
 
 );
 
@@ -68,82 +41,96 @@ currentUser
 );
 
 
-return ()=>unsubscribe();
+return ()=>subscription.unsubscribe();
+
 
 },[]);
 
 
 
-const handleLogin = async()=>{
+const checkUser = async()=>{
 
 
-const provider =
+const {
 
-new GoogleAuthProvider();
+data:{user}
 
+}
 
+=
 
-try{
-
-
-const result =
-
-await signInWithPopup(
-
-auth,
-
-provider
-
-);
+await supabase.auth.getUser();
 
 
 
 setUser(
 
-result.user
+user
 
-);
-
-
-}
-
-
-catch(error){
-
-
-console.log(
-
-error
-
-);
-
-
-}
-
-
-};
-
-
-
-const handleLogout = ()=>{
-
-
-signOut(
-
-auth
-
-);
-
-
-
-setUser(
+||
 
 null
 
 );
 
 
+
+setLoading(false);
+
+
 };
+
+
+
+
+const handleLogin = async()=>{
+
+
+await supabase.auth.signInWithOAuth(
+
+{
+
+provider:"google"
+
+}
+
+);
+
+
+};
+
+
+
+
+const handleLogout = async()=>{
+
+
+await supabase.auth.signOut();
+
+
+
+setUser(null);
+
+
+};
+
+
+
+if(loading)
+{
+
+return(
+
+<h2>
+
+Loading...
+
+</h2>
+
+);
+
+}
+
 
 
 return(
@@ -193,18 +180,24 @@ user
 (
 
 
-
 <>
-
 
 
 <img
 
+
 src={
 
-user.photoURL
+user.user_metadata?.picture
+
+||
+
+user.user_metadata?.avatar_url
 
 }
+
+
+alt="Profile"
 
 
 style={{
@@ -219,6 +212,7 @@ marginBottom:"20px"
 
 }}
 
+
 />
 
 
@@ -227,7 +221,15 @@ marginBottom:"20px"
 
 {
 
-user.displayName
+user.user_metadata?.full_name
+
+||
+
+user.user_metadata?.name
+
+||
+
+"User"
 
 }
 
@@ -239,11 +241,11 @@ user.displayName
 
 style={{
 
-color:"#64748b",
-
 marginTop:"10px",
 
-marginBottom:"25px"
+marginBottom:"25px",
+
+color:"#64748b"
 
 }}
 
@@ -259,29 +261,20 @@ user.email
 
 
 
-
 <button
 
 className="deleteBtn"
 
-onClick={
-
-handleLogout
-
-}
+onClick={handleLogout}
 
 >
 
-
 Logout
-
 
 </button>
 
 
-
 </>
-
 
 
 )
@@ -294,9 +287,7 @@ Logout
 (
 
 
-
 <>
-
 
 
 <h2>
@@ -304,6 +295,7 @@ Logout
 Welcome
 
 </h2>
+
 
 
 <p
@@ -326,11 +318,7 @@ Sign in to continue
 
 className="saveBtn"
 
-onClick={
-
-handleLogin
-
-}
+onClick={handleLogin}
 
 >
 
@@ -339,13 +327,10 @@ Sign in with Google
 </button>
 
 
-
 </>
 
 
-
 )
-
 
 
 }
@@ -357,8 +342,7 @@ Sign in with Google
 
 </div>
 
-)
-
+);
 
 
 }

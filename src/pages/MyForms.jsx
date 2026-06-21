@@ -11,18 +11,59 @@ function MyForms() {
 
     const [forms, setForms] = useState([]);
 
+    const checkUser = async()=>{
 
-    useEffect(()=>{
 
+const {
+
+data:{user}
+
+}
+
+=
+
+await supabase.auth.getUser();
+
+if(!user)
+{
+
+navigate(
+
+"/profile"
+
+);
+
+return;
+
+}
+
+
+};
+
+
+useEffect(()=>{
+
+
+checkUser();
 
 fetchForms();
 
 
-},[]);
-
+},[]);  
 
 
 const fetchForms = async()=>{
+
+const {
+
+data:{user}
+
+}
+
+=
+
+await supabase.auth.getUser();
+
 
 
 const {
@@ -47,9 +88,27 @@ await supabase
 
 "*"
 
+)
+
+.eq(
+
+"user_id",
+
+user.id
+
+)
+
+.order(
+
+"created_at",
+
+{
+
+ascending:false
+
+}
+
 );
-
-
 
 
 if(error)
@@ -66,44 +125,71 @@ return;
 }
 
 
-
 setForms(
 
 data
 
+||
+
+[]
+
 );
+
 
 
 };
 
     const { showToast } = useToast();
 
+const handleDelete = async(id)=>{
 
-    const handleDelete = (id) => {
+const {error} = await supabase
 
-        let updatedForms = forms.filter(
+.from(
 
-            form => form.id !== id
+"forms"
 
-        );
+)
+
+.delete()
+
+.eq(
+
+"id",
+
+id
+
+);
 
 
-        setForms(updatedForms);
+if(error)
+{
+
+console.log(error);
+
+return;
+
+}
 
 
-        localStorage.setItem(
+setForms(
 
-            "forms",
+forms.filter(
 
-            JSON.stringify(updatedForms)
+form=>form.id!==id
 
-        );
+)
 
-        showToast(
-            "✔ Form deleted successfully"
-        );
+);
 
-    };
+
+showToast(
+
+"✔ Form deleted successfully"
+
+);
+
+};
 
     const [search,setSearch]=useState("");
 
@@ -121,42 +207,86 @@ search.toLowerCase()
 
 );
 
-    const handleDuplicate=(form)=>{
+  
+const handleDuplicate = async(form)=>{
 
-let copy={
 
-...form,
+const {
 
-id:crypto.randomUUID(),
+data:{user}
+
+}
+
+=
+
+await supabase.auth.getUser();
+
+
+
+const copy = {
+
+
+id:
+
+crypto.randomUUID(),
+
 
 title:
 
-form.title+
+form.title+" Copy",
 
-" Copy"
+
+fields:
+
+form.fields,
+
+
+user_id:
+
+user.id
+
 
 };
 
 
-let updated=[
 
-...forms,
+const {
+
+error
+
+}
+
+=
+
+await supabase
+
+.from(
+
+"forms"
+
+)
+
+.insert(
 
 copy
 
-];
-
-
-setForms(updated);
-
-
-localStorage.setItem(
-
-"forms",
-
-JSON.stringify(updated)
-
 );
+
+
+
+if(error)
+{
+
+console.log(error);
+
+return;
+
+}
+
+
+
+fetchForms();
+
 
 
 showToast(
@@ -165,7 +295,9 @@ showToast(
 
 );
 
+
 };
+
 
     return(
 
@@ -271,20 +403,11 @@ form.fields.length
 </p>
 
 
-
 <p>
 
 Responses :
 
-{
-
-form.responses?.length
-
-||
-
-0
-
-}
+Coming Soon
 
 </p>
 

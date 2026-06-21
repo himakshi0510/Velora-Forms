@@ -27,48 +27,81 @@ function FillForm() {
     // Load Form
     // ==========================
 
-    useEffect(() => {
+useEffect(()=>{
 
-        let forms =
+fetchForm();
 
-            JSON.parse(
-
-                localStorage.getItem("forms")
-
-            )
-
-            ||
-
-            [];
+},[id]);
 
 
-        let foundForm =
-
-            forms.find(
-
-                form => form.id === id
-
-            );
+const fetchForm = async()=>{
 
 
-        setForm(
+const {
 
-            foundForm
+data,
 
-        );
+error
+
+}
+
+=
+
+await supabase
+
+.from(
+
+"forms"
+
+)
+
+.select(
+
+"*"
+
+)
+
+.eq(
+
+"id",
+
+id
+
+)
+
+.single();
 
 
-        setLoading(
 
-            false
+if(error)
+{
 
-        );
+console.log(error);
+
+setLoading(false);
+
+return;
+
+}
 
 
 
-    }, [id]);
+setForm(
+
+data
+
+);
 
 
+
+setLoading(
+
+false
+
+);
+
+
+};
 
 
     // ==========================
@@ -175,46 +208,77 @@ function FillForm() {
 
     const handleSubmit = async () => {
 
+    let filled = Object.values(
 
-        if (
+answers
 
-            Object.keys(
+)
 
-                answers
+.some(
 
-            ).length === 0
+value =>
 
-        )
+Array.isArray(value)
 
-        {
+?
 
-            alert(
+value.length > 0
 
-                "Please fill at least one field"
+:
 
-            );
+value
 
-            return;
-
-        }
-
+);
 
 
-        let forms =
 
-            JSON.parse(
+if(!filled)
+{
 
-                localStorage.getItem(
+alert(
 
-                    "forms"
+"Please fill at least one field"
 
-                )
+);
 
-            )
+return;
 
-            ||
+}
 
-            [];
+
+    
+        for(let field of form.fields)
+{
+
+if(field.type==="url")
+{
+
+let value = answers[field.label] || "";
+
+try
+{
+
+new URL(value);
+
+}
+
+catch
+{
+
+alert(
+
+"Please enter a valid URL"
+
+);
+
+return;
+
+}
+
+}
+
+}
+
 
     const { error } = await supabase
 
@@ -224,30 +288,30 @@ function FillForm() {
 
 )
 
+
 .insert(
 
 {
 
-id:crypto.randomUUID(),
+id:
 
-form_id:id,
+crypto.randomUUID(),
 
-answers:{
+form_id:
 
-...answers,
+id,
 
-submittedAt:
+answers:
+
+answers,
+
+submitted_at:
 
 new Date()
-
-.toLocaleString()
-
-}
 
 }
 
 );
-
 
 
 if(error)
@@ -277,45 +341,19 @@ return;
 
         );
 
-
-
-        navigate(
-
-            "/myforms"
-
-        );
-
-        for(let field of form.fields)
-{
-
-if(field.type==="url")
-{
-
-let value = answers[field.label] || "";
-
-try
-{
-
-new URL(value);
-
-}
-
-catch
-{
-
 showToast(
 
-"Please enter a valid URL"
+"✔ Response submitted successfully"
 
 );
 
-return;
 
-}
+navigate(
 
-}
+"/thanks"
 
-}
+);
+
 
 
     };
@@ -630,72 +668,7 @@ e.target.files[0]?.name
 }
 
 
-
 return(
-
-
-field.type==="file"
-
-?
-
-(
-
-<input
-
-
-type="file"
-
-
-onChange={(e)=>
-
-handleChange(
-
-field.label,
-
-e.target.files[0]?.name
-
-)
-
-}
-
-
-/>
-
-)
-
-:
-
-field.type==="file"
-
-?
-
-(
-
-<input
-
-type="file"
-
-required={field.required}
-
-onChange={(e)=>
-
-handleChange(
-
-field.label,
-
-e.target.files[0]?.name
-
-)
-
-}
-
-/>
-
-)
-
-:
-
-(
 
 <input
 
@@ -716,9 +689,6 @@ e.target.value
 }
 
 />
-
-)
-
 
 );
 

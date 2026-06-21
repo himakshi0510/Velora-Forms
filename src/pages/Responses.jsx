@@ -1,9 +1,15 @@
+import {supabase}
+
+from "../supabase/supabase";
+import { useNavigate } from "react-router-dom";
 import {useParams} from "react-router-dom";
 import {useState,useEffect} from "react";
 import { useToast } from "../context/ToastContext";
 
 function Responses()
 {
+
+const navigate = useNavigate();
 
 const {id}=useParams();
 
@@ -15,75 +21,85 @@ const [filter,setFilter]=useState("all");
 
 const { showToast } = useToast();
 
-const handleDelete = (responseIndex)=>{
-
-let forms = JSON.parse(
-
-localStorage.getItem("forms")
-
-)
-
-||
-
-[];
+const checkUser = async()=>{
 
 
-let updatedForms = forms.map(
+const {
 
-(form)=>{
+data:{user}
 
-if(form.id===id)
+}
+
+=
+
+await supabase.auth.getUser();
+
+
+
+if(!user)
 {
 
-let updatedResponses =
+navigate("/profile");
 
-form.responses.filter(
+}
 
-(_,i)=>
-
-i!==responseIndex
-
-);
-
-
-return {
-
-...form,
-
-responses:updatedResponses
 
 };
 
+
+
+const handleDelete = async(responseId)=>{
+
+const {
+
+error
+
 }
 
+=
 
-return form;
+await supabase
 
-}
+.from(
+
+"responses"
+
+)
+
+.delete()
+
+.eq(
+
+"id",
+
+responseId
 
 );
 
 
-localStorage.setItem(
 
-"forms",
+if(error)
+{
 
-JSON.stringify(updatedForms)
+console.log(error);
 
-);
+return;
+
+}
+
 
 
 setResponses(
 
-updatedForms.find(
+responses.filter(
 
-(f)=>f.id===id
+r=>r.id!==responseId
 
-).responses
+)
 
 );
 
-};
+
 
 showToast(
 
@@ -92,59 +108,258 @@ showToast(
 );
 
 
+};
+
+
 useEffect(()=>{
 
 
-let forms =
+fetchResponses();
 
-JSON.parse(
 
-localStorage.getItem("forms")
+},[id]);
+
+
+
+const fetchResponses = async()=>{
+
+
+const {
+
+data,
+
+error
+
+}
+
+=
+
+
+await supabase
+
+.from(
+
+"responses"
 
 )
 
-||
+.select(
 
-[];
+"*"
 
+)
 
+.eq(
 
-let form = forms.find(
+"form_id",
 
-(f)=>f.id===id
+id
 
-);
+)
 
+.order(
 
+"submitted_at",
 
-console.log("URL id:",id);
-
-console.log("All forms:",forms);
-
-console.log("Found form:",form);
-
-if(form)
 {
 
-console.log(
+ascending:false
 
-"Responses:",
-
-form.responses
+}
 
 );
+
+
+
+if(error)
+{
+
+console.log(error);
+
+return;
+
+}
+
+
 
 
 setResponses(
 
-form.responses || []
+data
+
+||
+
+[]
 
 );
 
+
+
+};
+
+
+const exportCSV = ()=>{
+
+
+let csv =
+
+"Submitted At,";
+
+
+if(responses.length===0)
+{
+
+return;
+
 }
 
-},[id]);
 
+
+Object.keys(
+
+responses[0].answers
+
+)
+
+.forEach(
+
+key=>{
+
+csv +=
+
+key +
+
+",";
+
+}
+
+);
+
+
+csv += "\n";
+
+
+
+responses.forEach(
+
+response=>{
+
+
+csv +=
+
+new Date(
+
+response.submitted_at
+
+)
+
+.toLocaleString()
+
++
+
+",";
+
+
+
+Object.values(
+
+response.answers
+
+)
+
+.forEach(
+
+value=>{
+
+
+csv +=
+
+
+'"'+value+'"'
+
+
++
+
+
+",";
+
+
+});
+
+
+csv += "\n";
+
+
+}
+
+);
+
+
+
+const blob =
+
+new Blob(
+
+[
+
+csv
+
+],
+
+{
+
+type:
+
+"text/csv"
+
+}
+
+);
+
+
+const url = URL.createObjectURL(
+
+blob
+
+);
+
+
+
+const a = document.createElement(
+
+"a"
+
+);
+
+
+
+a.href = url;
+
+
+
+a.download = "responses.csv";
+
+
+
+a.click();
+
+
+
+URL.revokeObjectURL(
+
+url
+
+);
+
+
+showToast(
+
+"CSV Downloaded"
+
+);
+
+
+};
 
 return(
 
@@ -237,11 +452,43 @@ Oldest First
 
 
 
+{
+
+responses.length>0
+
+&&
+
+(
+
+<button
+
+className="saveBtn"
+
+style={{
+
+
+marginBottom:"25px"
+
+}}
+
+onClick={exportCSV}
+
+>
+
+Export CSV
+
+</button>
+
+)
+
+}
+
 
 
 {
 
 responses.length===0
+
 
 
 ?
@@ -265,7 +512,11 @@ responses
 
 (response)=>
 
-JSON.stringify(response)
+JSON.stringify(
+
+response.answers
+
+)
 
 .toLowerCase()
 
@@ -277,47 +528,51 @@ search.toLowerCase()
 
 )
 
-
-
 .sort(
 
 (a,b)=>{
-
-
-if(filter==="latest")
-
-{
-
-return new Date(b.submittedAt)
-
--
-
-new Date(a.submittedAt);
-
-}
-
 
 
 if(filter==="oldest")
 
 {
 
-return new Date(a.submittedAt)
+return new Date(
+
+a.submitted_at
+
+)
 
 -
 
-new Date(b.submittedAt);
+new Date(
+
+b.submitted_at
+
+);
 
 }
 
 
-return 0;
+
+return new Date(
+
+b.submitted_at
+
+)
+
+-
+
+new Date(
+
+a.submitted_at
+
+);
 
 
 }
 
 )
-
 
 
 .map(
@@ -333,7 +588,7 @@ return 0;
 className="formCard"
 
 
-key={index}
+key={response.id}
 
 >
 
@@ -351,15 +606,39 @@ Response {index+1}
 
 Submitted :
 
+
 {
 
-response.submittedAt
+response.submitted_at
 
-||
+?
+
+new Date(
+
+response.submitted_at
+
+)
+
+.toLocaleString(
+
+"en-IN",
+
+{
+
+timeZone:
+
+"Asia/Kolkata"
+
+}
+
+)
+
+:
 
 "Unknown"
 
 }
+
 
 </p>
 
@@ -375,7 +654,7 @@ response.submittedAt
 
 Object.entries(
 
-response
+response.answers
 
 )
 
@@ -481,7 +760,7 @@ if(choice)
 
 handleDelete(
 
-index
+response.id
 
 );
 

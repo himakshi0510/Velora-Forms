@@ -14,6 +14,7 @@ import Analytics from "./pages/Analytics";
 import Profile from "./pages/Profile";
 import HelpDesk from "./pages/HelpDesk";
 import Publish from "./pages/Publish";
+import ThankYou from "./pages/ThankYou";
 
 
 function App()
@@ -101,6 +102,14 @@ setTheme={setTheme}
 path="/publish/:id"
 
 element={<Publish/>}
+
+/>
+
+<Route
+
+path="/thanks"
+
+element={<ThankYou/>}
 
 />
 

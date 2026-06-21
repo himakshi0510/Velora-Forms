@@ -1,67 +1,190 @@
+import {useState,useEffect}
+
+from "react";
+
+import {supabase}
+
+from "../supabase/supabase";
+
 function Notifications()
 {
 
-const forms =
+const [notifications,setNotifications] = useState([]);
 
-JSON.parse(
+useEffect(()=>{
 
-localStorage.getItem(
+fetchNotifications();
+
+},[]);
+
+
+const fetchNotifications = async()=>{
+
+const {
+
+data:responses
+
+}
+
+=
+
+await supabase
+
+.from("responses")
+
+.select("*");
+
+
+const {
+
+data:{user}
+
+}
+
+=
+
+await supabase.auth.getUser();
+
+
+
+const {
+
+data:forms
+
+}
+
+=
+
+await supabase
+
+.from(
 
 "forms"
 
 )
 
+.select(
+
+"*"
+
 )
+
+.eq(
+
+"user_id",
+
+user.id
+
+);
+
+const myFormIds =
+
+(
+
+forms
 
 ||
 
-[];
+[]
+
+)
+
+.map(
+
+form=>form.id
+
+);
 
 
-let notifications = [];
 
+const result =
 
-forms.forEach(
+(
 
-form=>{
+responses
 
-form.responses?.forEach(
+||
+
+[]
+
+)
+
+.filter(
+
+response=>
+
+myFormIds.includes(
+
+response.form_id
+
+)
+
+)
+
+.map(
 
 response=>{
 
 
-notifications.push(
+const form = forms.find(
 
-{
+f=>f.id===response.form_id
+
+);
+
+
+
+return{
 
 title:
 
-form.title,
+form?.title
+
+||
+
+"Untitled Form",
 
 
 time:
 
-response.submittedAt
+response.submitted_at
+
+};
+
 
 }
 
 );
 
 
-}
+result.sort(
 
+(a,b)=>
+
+new Date(
+
+b.time
+
+)
+
+-
+
+new Date(
+
+a.time
+
+)
 
 );
 
+setNotifications(
 
-}
-
+result
 
 );
 
+};
 
-
-notifications.reverse();
 
 
 return(
@@ -141,7 +264,14 @@ notifications.map(
 className="formCard"
 
 
-key={index}
+key={
+
+notification.time
+
++
+index
+
+}
 
 >
 
@@ -153,10 +283,13 @@ key={index}
 
 notification.title
 
+||
+
+"Untitled Form"
+
 }
 
 </h3>
-
 
 
 <p
@@ -189,11 +322,27 @@ color:"#64748b"
 
 >
 
+
 {
 
 notification.time
 
+?
+
+new Date(
+
+notification.time
+
+)
+
+.toLocaleString()
+
+:
+
+"Unknown"
+
 }
+
 
 </p>
 
