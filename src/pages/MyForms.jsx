@@ -52,6 +52,23 @@ fetchForms();
 },[]);  
 
 
+const [
+
+responses,
+
+setResponses
+
+]
+
+=
+
+useState(
+
+[]
+
+);
+
+
 const fetchForms = async()=>{
 
 const {
@@ -128,6 +145,39 @@ return;
 setForms(
 
 data
+
+||
+
+[]
+
+);
+
+const {
+
+data:responsesData
+
+}
+
+=
+
+await supabase
+
+.from(
+
+"responses"
+
+)
+
+.select(
+
+"*"
+
+);
+
+
+setResponses(
+
+responsesData
 
 ||
 
@@ -407,7 +457,17 @@ form.fields.length
 
 Responses :
 
-Coming Soon
+{
+
+responses.filter(
+
+r=>r.form_id===form.id
+
+)
+
+.length
+
+}
 
 </p>
 
@@ -506,28 +566,26 @@ Responses
 
 className="addBtn"
 
-onClick={()=>{
+onClick={() => {
+
+const link =
+
+window.location.origin +
+
+"/fill/" +
+
+form.id;
 
 
-navigator.clipboard.writeText(
+navigator.clipboard.writeText(link);
 
-window.location.origin+
+alert(link);
 
-"/fill/"+
+showToast("Link copied");
 
-form.id
+}
 
-);
-
-
-showToast(
-
-"✔ Link copied"
-
-);
-
-
-}}
+}
 
 >
 
